@@ -11,6 +11,8 @@ function sanitize_input($data) {
     return htmlspecialchars(stripslashes(trim($data)));
 }
 
+session_start();
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Get form data
     $username = sanitize_input($_POST["username"]);
@@ -51,6 +53,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bindValue(':password_hash', $hashed_password);
 
     if ($stmt->execute()) {
+        // Set session variables
+        $_SESSION['username'] = $username;
+        $_SESSION['user_id'] = $conn->lastInsertId(); // Assuming you have an auto-increment ID column
+
+        // Redirect to home page
         header("Location: ../view/pages/HomePage.php");
         exit();
     } else {
