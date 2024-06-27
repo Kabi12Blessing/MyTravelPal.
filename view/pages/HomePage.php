@@ -12,15 +12,10 @@ session_start();
         body, html {
             height: 100%;
             margin: 0;
-<<<<<<< HEAD
             font-family: 'Roboto', sans-serif;
             scroll-behavior: smooth;
             background-color: #f5f7fa;
             color: #333;
-=======
-            font-family: Arial, Helvetica, sans-serif;
-            scroll-behavior: smooth;
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         }
         .header {
             display: flex;
@@ -103,10 +98,7 @@ session_start();
             text-align: center;
             color: white;
         }
-<<<<<<< HEAD
 
-=======
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         .hero-overlay {
             position: absolute;
             top: 0;
@@ -120,20 +112,12 @@ session_start();
             z-index: 1;
         }
         .hero h1 {
-<<<<<<< HEAD
             font-size: 56px;
-=======
-            font-size: 48px;
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
             margin-bottom: 20px;
         }
         .hero p {
             font-size: 24px;
-<<<<<<< HEAD
             margin-bottom: 30px;
-=======
-            margin-bottom: 20px;
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         }
         .search-box {
             display: flex;
@@ -162,11 +146,7 @@ session_start();
         .arrow-down {
             font-size: 32px;
             color: white;
-<<<<<<< HEAD
             margin-top: 30px;
-=======
-            margin-top: 20px;
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
             animation: bounce 2s infinite;
             cursor: pointer;
         }
@@ -179,33 +159,24 @@ session_start();
             }
         }
         .content {
-<<<<<<< HEAD
             padding: 50px 20px;
             background-color: #f5f7fa;
             text-align: center;
-=======
-            padding: 50px;
-            background-color: #f5f5f5;
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         }
         .section {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-<<<<<<< HEAD
             
             /* border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
             margin-bottom: 50px;
-=======
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         }
         .section h2 {
             font-size: 36px;
             margin-bottom: 20px;
             color: #333;
         }
-<<<<<<< HEAD
         .section p {
             font-size: 18px;
             color: #666;
@@ -236,17 +207,6 @@ session_start();
         .stat p {
             font-size: 18px;
             color: #555;
-=======
-        .blue-section {
-            background: linear-gradient(to right, #1E90FF, #00BFFF);
-            color: white;
-            padding: 50px 20px;
-            border-radius: 10px;
-            margin-bottom: 50px;
-            max-width: 75%;
-            margin: 50px auto;
-            
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         }
         .categories, .travelling-this-week {
             display: flex;
@@ -280,7 +240,6 @@ session_start();
             margin: 0 15px 15px 15px;
             color: #555;
         }
-<<<<<<< HEAD
         .testimonial-section, .newsletter-section {
             padding: 50px 20px;
             background-color: #f5f5f5;
@@ -360,38 +319,6 @@ session_start();
         }
         .newsletter button:hover {
             background-color: #0056b3;
-=======
-        .acontent {
-            padding: 100px 50px;
-            background-color: #f5f5f5;
-            text-align: center;
-        }
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            text-align: center;
-        }
-        .stat {
-            flex: 1;
-            margin: 0 10px;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #f1f1f1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .stat i {
-            font-size: 50px;
-            color: #007BFF;
-            margin-bottom: 10px;
-        }
-        .stat h3 {
-            font-size: 36px;
-            margin: 10px 0;
-        }
-        .stat p {
-            font-size: 18px;
-            color: #555;
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         }
         .footer {
             background-color: #333;
@@ -418,11 +345,7 @@ session_start();
                 <a href="dashboard.php" class="dashboard">Dashboard</a>
                 <div class="username" onclick="toggleDropdown()">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></div>
                 <div class="dropdown">
-<<<<<<< HEAD
-                    <a href="Dashboard.php">Dashboard</a>
-=======
                     <a href="dashboard.php">Dashboard</a>
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
                     <a href="/Travel_Pal/action/logout.php">Log Out</a>
                 </div>
             </div>
@@ -442,11 +365,7 @@ session_start();
             <div id="arrow-down" class="arrow-down">&#x2193;</div>
         </div>
     </div>
-<<<<<<< HEAD
     <div id="acontent" class="content">
-=======
-    <div id="acontent" class="acontent">
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         <div class="section about">
             <h2>About TravelPal</h2>
             <p>TravelPal connects you with fellow travelers who have extra luggage space, allowing you to send packages easily and securely. Our community is built on trust, and every traveler is verified to ensure a safe experience.</p>
@@ -468,16 +387,9 @@ session_start();
                 <p>Trust score</p>
             </div>
         </div>
-<<<<<<< HEAD
         <div style= "background: linear-gradient(to right, #1E90FF, #00BFFF); border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" class="section">
             <h2 >Popular Countries</h2>
-=======
-    </div>
-    <div class="blue-section">
-        <div class="section">
-            <h2>Popular Countries</h2>
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
             <div class="categories">
                 <div class="category">
                     <img src="country1.jpg" alt="Country 1">
@@ -501,14 +413,9 @@ session_start();
                 </div>
             </div>
         </div>
-<<<<<<< HEAD
         <div style= "background: linear-gradient(to right, #1E90FF, #80BFFF); border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" class="section">
             <h2> Travelling This Week</h2>
-=======
-        <div class="section">
-            <h2>Travelling This Week</h2>
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
             <div class="travelling-this-week">
                 <div class="travelling-item">
                     <img src="traveller1.jpg" alt="Traveller 1">
@@ -538,7 +445,6 @@ session_start();
             </div>
         </div>
     </div>
-<<<<<<< HEAD
     <div class="testimonial-section">
         <h2>User Testimonials</h2>
         <div class="testimonial-slider">
@@ -569,29 +475,14 @@ session_start();
             </form>
         </div>
     </div>
-=======
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
     <div class="footer">
         <p>&copy; 2024 TravelPal. All rights reserved. | <a href="/view/privacy-policy.php">Privacy Policy</a> | <a href="/view/terms-of-service.php">Terms of Service</a></p>
     </div>
     <script>
         document.getElementById('arrow-down').addEventListener('click', function() {
-<<<<<<< HEAD
             document.getElementById('acontent').scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
 
-=======
-            document.getElementById('content').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-
-        // Initialize Leaflet map
-        var map = L.map('map').setView([51.505, -0.09], 2);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
         function toggleDropdown() {
             var dropdown = document.querySelector('.dropdown');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
@@ -612,8 +503,3 @@ session_start();
     </script>
 </body>
 </html>
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
