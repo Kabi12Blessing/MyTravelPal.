@@ -98,6 +98,9 @@ CREATE TABLE Reviews (
 
 -- Commit transaction
 COMMIT;
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 8b205f118c2463e2af33ee587bdd228d5f878a58
