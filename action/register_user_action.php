@@ -46,8 +46,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Email or username already registered.");
     }
 
-    // Insert the new user into the database
-    $stmt = $conn->prepare("INSERT INTO Users (username, email, password_hash) VALUES (:username, :email, :password_hash)");
+    // Insert the new user into the database with profile_picture as NULL by default
+    $stmt = $conn->prepare("INSERT INTO Users (username, email, password_hash, profile_picture) VALUES (:username, :email, :password_hash, NULL)");
     $stmt->bindValue(':username', $username);
     $stmt->bindValue(':email', $email);
     $stmt->bindValue(':password_hash', $hashed_password);

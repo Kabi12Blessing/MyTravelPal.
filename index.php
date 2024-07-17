@@ -348,13 +348,13 @@
 
         .modal-body .social-login button {
             width: 48%;
-            background-color: #3b5998; /*Facebook color */
+            background-color: #3b5998; /* Facebook color */
             color: white;
         }
 
         .modal-body .social-login button.google {
             background-color: #db4a39; /* Google color */
-        } 
+        }
 
         .modal-body .social-login button:hover {
             opacity: 0.8;
@@ -501,10 +501,11 @@
                     <input type="checkbox" checked="checked"> Remember me on this device
                 </label>
             </form>
-            <div class="social-login">
+            <!-- Not necessary for now -->
+            <!-- <div class="social-login">
                 <button type="button" class="facebook">Login with Facebook</button>
                 <button type="button" class="google">Login with Google</button>
-            </div>
+            </div> -->
             <div class="register-link">
                 <p>Don't have an account? <a href="javascript:void(0)" onclick="openRegisterModal()">Register here</a></p>
             </div>
@@ -534,10 +535,11 @@
                         <input type="checkbox" required> I agree to the <a style="margin-left:5px;" href="#">Terms and Conditions</a>
                     </label>
                 </form>
-                <div class="social-login">
+                <!-- Not necessary for now -->
+                <!-- <div class="social-login">
                     <button type="button" class="facebook">Register with Facebook</button>
                     <button type="button" class="google">Register with Google</button>
-                </div>
+                </div> -->
                 <div class="login-link">
                     <p>Already have an account? <a href="javascript:void(0)" onclick="openLoginModal()">Login here</a></p>
                 </div>

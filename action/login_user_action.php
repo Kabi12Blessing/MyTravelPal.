@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Include database connection file
+// Including database connection file
 require_once '../settings/connection.php';
 
 // Function to sanitize user input
@@ -44,14 +44,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['email'] = $user['email'];
 
+                //modify what is above: eg, change user_id to session_user_id; Sampah
+
                 // Redirect to the user dashboard or another page
                 header("Location: ../view/pages/HomePage.php");
                 exit();
             } else {
-                die("Invalid password.");
+                die("Invalid username or password.");
             }
         } else {
-            die("No user found with this email.");
+            //die("No user found with this email.");
+
+            die("Invalid username or password");
         }
     } else {
         die("Email and password are required.");
