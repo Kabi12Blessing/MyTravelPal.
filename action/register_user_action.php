@@ -1,9 +1,10 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Include database connection file
+// Including database connection file
 require_once '../settings/connection.php';
 
 // Function to sanitize user input
@@ -11,57 +12,51 @@ function sanitize_input($data) {
     return htmlspecialchars(stripslashes(trim($data)));
 }
 
-session_start();
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
-    $username = sanitize_input($_POST["username"]);
-    $email = sanitize_input($_POST["email"]);
-    $password = sanitize_input($_POST["password"]);
-    $confirm_password = sanitize_input($_POST["confirm_password"]);
+    // Check if username, email, password, and confirm_password are set
+    if (isset($_POST["username"]) && isset($_POST["email"]) && isset($_POST["password"]) && isset($_POST["confirm_password"])) {
+        // Get form data
+        $username = sanitize_input($_POST["username"]);
+        $email = sanitize_input($_POST["email"]);
+        $password = sanitize_input($_POST["password"]);
+        $confirm_password = sanitize_input($_POST["confirm_password"]);
 
-    // Validate form data
-    if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
-        die("All fields are required.");
-    }
+        // Validate form data
+        if (empty($username) || empty($email) || empty($password) || empty($confirm_password)) {
+            header("Location: ../login/register_view.php?error=" . urlencode("All fields are required."));
+            exit();
+        }
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        die("Invalid email format.");
-    }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            header("Location: ../login/register_view.php?error=" . urlencode("Invalid email format."));
+            exit();
+        }
 
-    if ($password !== $confirm_password) {
-        die("Passwords do not match.");
-    }
+        if ($password !== $confirm_password) {
+            header("Location: ../login/register_view.php?error=" . urlencode("Passwords do not match."));
+            exit();
+        }
 
-    // Hash the password
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        // Hash the password
+        $password_hash = password_hash($password, PASSWORD_BCRYPT);
 
-    // Check if the email or username already exists
-    $stmt = $conn->prepare("SELECT user_id FROM Users WHERE email = :email OR username = :username");
-    $stmt->bindValue(':email', $email);
-    $stmt->bindValue(':username', $username);
-    $stmt->execute();
+        // Prepare and execute query to insert user data
+        $stmt = $conn->prepare("INSERT INTO Users (username, email, password_hash) VALUES (:username, :email, :password_hash)");
+        $stmt->bindValue(':username', $username);
+        $stmt->bindValue(':email', $email);
+        $stmt->bindValue(':password_hash', $password_hash);
 
-    if ($stmt->rowCount() > 0) {
-        die("Email or username already registered.");
-    }
-
-    // Insert the new user into the database with profile_picture as NULL by default
-    $stmt = $conn->prepare("INSERT INTO Users (username, email, password_hash, profile_picture) VALUES (:username, :email, :password_hash, NULL)");
-    $stmt->bindValue(':username', $username);
-    $stmt->bindValue(':email', $email);
-    $stmt->bindValue(':password_hash', $hashed_password);
-
-    if ($stmt->execute()) {
-        // Set session variables
-        $_SESSION['username'] = $username;
-        $_SESSION['user_id'] = $conn->lastInsertId(); // Assuming you have an auto-increment ID column
-
-        // Redirect to home page
-        header("Location: ../view/pages/HomePage.php");
-        exit();
+        if ($stmt->execute()) {
+            // Registration successful, redirect to login page with success message
+            header("Location: ../login/login_view.php?success=" . urlencode("Registration successful. Please log in."));
+            exit();
+        } else {
+            header("Location: ../login/register_view.php?error=" . urlencode("Registration failed. Please try again."));
+            exit();
+        }
     } else {
-        echo "Error: " . $stmt->errorInfo()[2];
+        header("Location: ../login/register_view.php?error=" . urlencode("All fields are required."));
+        exit();
     }
 }
 ?>

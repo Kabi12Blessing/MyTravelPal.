@@ -125,6 +125,12 @@
         .login-link a:hover {
             text-decoration: underline;
         }
+
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -135,18 +141,25 @@
                 <h2>TravelPal Register</h2>
             </div>
             <div class="modal-body">
-                <input type="text" placeholder="Username" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
-                <input type="password" placeholder="Confirm Password" required>
-                <button type="submit">REGISTER</button>
-                <label>
-                    <input type="checkbox" required> I agree to the  <a style="margin-left:5px;" href="#"> Terms and Conditions</a>
-                </label>
-                <div class="social-login">
+                <?php
+                if (isset($_GET['error'])) {
+                    echo '<div class="error-message">' . htmlspecialchars($_GET['error']) . '</div>';
+                }
+                ?>
+                <form action="../action/register_user_action.php" method="post">
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                    <button type="submit">REGISTER</button>
+                    <label>
+                        <input type="checkbox" required> I agree to the <a style="margin-left:5px;" href="#"> Terms and Conditions</a>
+                    </label>
+                </form>
+                <!-- <div class="social-login">
                     <button type="button" class="facebook">Register with Facebook</button>
                     <button type="button" class="google">Register with Google</button>
-                </div>
+                </div> -->
                 <div class="login-link">
                     <p>Already have an account? <a href="login_view.php">Login here</a></p>
                 </div>

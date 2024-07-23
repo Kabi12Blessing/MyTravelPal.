@@ -440,7 +440,7 @@ function convertPathToWeb($absolutePath) {
                 <div class="username" onclick="toggleDropdown()">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></div>
                 <div class="dropdown">
                     <a href="profile.php">Profile</a>
-                    <a href="/Travel_Pal/action/logout.php">Log Out</a>
+                    <a href="/MyTravelPal/action/logout.php">Log Out</a>
                 </div>
             </div>
         <?php else: ?>
@@ -530,10 +530,12 @@ function convertPathToWeb($absolutePath) {
                     <div class="card-content">
                         <h3>Your Profile</h3>
                         <?php 
+                        // Default avatar URL
+                        $defaultAvatar = 'https://rawcdn.githack.com/Kabi12Blessing/72892025_ChurningPrediction/c2e416446c7e05056259be4e948de42f070a8e6c/266033.png';
                         // Convert absolute path to web-accessible relative path
-                        $profilePicturePath = empty($userInfo['profile_picture']) ? 'default_profile_picture.jpg' : convertPathToWeb($userInfo['profile_picture']);
+                        $profilePicturePath = empty($userInfo['profile_picture']) ? $defaultAvatar : convertPathToWeb($userInfo['profile_picture']);
                         ?>
-                        <img src="<?= htmlspecialchars($profilePicturePath) ?>" alt="Profile Picture" class="profile-picture">
+                        <img src="<?= htmlspecialchars($profilePicturePath) ?>" alt="Profile Picture" class="profile-picture" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
                         <form action="../../action/upload_profile_picture.php" method="post" enctype="multipart/form-data">
                             <input type="file" name="profile_picture" accept="image/*" required>
                             <button type="submit" class="btn">Upload Picture</button>
@@ -545,7 +547,7 @@ function convertPathToWeb($absolutePath) {
                         </div>
                         <form id="profileEdit" class="hidden" action="../../action/update_profile.php" method="post">
                             <p>Name: <input type="text" name="username" id="editName" value="<?= htmlspecialchars($_SESSION['username']) ?>"></p>
-                            <p>Email: <input type="email" name="email" id="editEmail" value="<?= htmlspecialchars($userInfo['email']) ?>"></p>
+                            <p>Email: <input type="email" name="email" id="editEmail" value="<?= htmlspecialchars($userInfo['email']) ?>" readonly></p>
                             <button type="submit" class="btn">Save</button>
                             <button type="button" class="btn" onclick="cancelEdit()">Cancel</button>
                         </form>
@@ -567,7 +569,7 @@ function convertPathToWeb($absolutePath) {
         <div class="modal-content">
             <span class="close" onclick="toggleModal()">&times;</span>
             <h2>Create a New Trip</h2>
-            <form action="../../../Travel_Pal/action/new_trip_action.php" method="post" enctype="multipart/form-data">
+            <form action="../../../MyTravelPal/action/new_trip_action.php" method="post" enctype="multipart/form-data">
                 <label for="origin_country">Origin Country:</label>
                 <select id="origin_country" name="origin_country" required>
                     <?php foreach ($countries as $country_id => $country_name): ?>
@@ -589,7 +591,7 @@ function convertPathToWeb($absolutePath) {
                 <input type="date" id="return" name="return" required>
                 
                 <label for="description">Description:</label>
-                <textarea id="description" name="description" required></textarea>
+                <textarea id="description" name="description" ></textarea>
                 
                 <label for="budget">Budget in $:</label>
                 <input type="number" id="budget" name="budget" required>
@@ -618,9 +620,9 @@ function convertPathToWeb($absolutePath) {
                     <label><input type="radio" name="gender" value="other" required> Other</label>
                 </div>
                 
-                <label for="images">Upload Images:</label>
+                <!-- <label for="images">Upload Images:</label>
                 <input type="file" id="images" name="images[]" multiple required>
-                
+                 -->
                 <button type="submit">Create Trip</button>
             </form>
         </div>

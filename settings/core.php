@@ -6,7 +6,7 @@ session_start();
 require 'connection.php';
 
 // Define some global constants
-define('BASE_URL', 'http://localhost/TRAVELPAL/');
+define('BASE_URL', 'http://localhost/MyTravelPal/');
 
 // Function to sanitize user input
 function sanitize($data) {

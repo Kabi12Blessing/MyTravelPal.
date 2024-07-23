@@ -21,11 +21,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Validate form data
         if (empty($email) || empty($password)) {
-            die("Email and password are required.");
+            header("Location: ../login/login_view.php?error=" . urlencode("Email and password are required."));
+            exit();
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            die("Invalid email format.");
+            header("Location: ../login/login_view.php?error=" . urlencode("Incorrect username or password."));
+            exit();
         }
 
         // Prepare and execute query to fetch user data
@@ -44,22 +46,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['email'] = $user['email'];
 
-                //modify what is above: eg, change user_id to session_user_id; Sampah
-
                 // Redirect to the user dashboard or another page
                 header("Location: ../view/pages/HomePage.php");
                 exit();
             } else {
-                die("Invalid username or password.");
+                header("Location: ../login/login_view.php?error=" . urlencode("Incorrect username or password."));
+                exit();
             }
         } else {
-            //die("No user found with this email.");
-
-            die("Invalid username or password");
+            header("Location: ../login/login_view.php?error=" . urlencode("Incorrect username or password."));
+            exit();
         }
     } else {
-        die("Email and password are required.");
+        header("Location: ../login/login_view.php?error=" . urlencode("Email and password are required."));
+        exit();
     }
 }
 ?>
-

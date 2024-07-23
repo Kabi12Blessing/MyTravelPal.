@@ -357,6 +357,13 @@ function convertPathToWeb($absolutePath) {
         .footer a:hover {
             text-decoration: underline;
         }
+
+        .profile-picture {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        }
     </style>
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 </head>
@@ -393,24 +400,29 @@ function convertPathToWeb($absolutePath) {
 
 
 
-            <div class="dashboard-section">
-                <?php foreach ($travelers as $traveler): ?>
-                    <div class="card">
-                        <div class="card-content">
-                            <?php 
-                            // Convert absolute path to web-accessible relative path
-                            $profilePicturePath = empty($traveler['profile_picture']) ? 'default_profile_picture.jpg' : convertPathToWeb($traveler['profile_picture']);
-                            ?>
-                            <img src="<?= htmlspecialchars($profilePicturePath) ?>" alt="Profile Picture">
-                            <h3>I am <?= htmlspecialchars($traveler['username']) ?>, travelling</h3>
-                            <p>From: <?= htmlspecialchars($traveler['origin_country']) ?></p>
-                            <p>To: <?= htmlspecialchars($traveler['destination_country']) ?></p>
-                            <p>Departure: <?= htmlspecialchars($traveler['travel_date']) ?></p>
-                        </div>
-                        <a style="margin-left:-10px;" href="trip_details.php?preference_id=<?= $traveler['preference_id'] ?>" class="view-more">View More</a>
-                    </div>
-                <?php endforeach; ?>
+        <div class="dashboard-section">
+    <?php foreach ($travelers as $traveler): ?>
+        <div class="card">
+            <div class="card-content">
+                <?php 
+                // Default avatar URL
+                $defaultAvatar = 'https://rawcdn.githack.com/Kabi12Blessing/72892025_ChurningPrediction/c2e416446c7e05056259be4e948de42f070a8e6c/266033.png';
+                // Convert absolute path to web-accessible relative path
+                $profilePicturePath = empty($traveler['profile_picture']) ? $defaultAvatar : convertPathToWeb($traveler['profile_picture']);
+                ?>
+                <img src="<?= htmlspecialchars($profilePicturePath) ?>" alt="Profile Picture" class="profile-picture">
+                <h3>I am <?= htmlspecialchars($traveler['username']) ?>, travelling</h3>
+                <p>From: <?= htmlspecialchars($traveler['origin_country']) ?></p>
+                <p>To: <?= htmlspecialchars($traveler['destination_country']) ?></p>
+                <p>Departure: <?= htmlspecialchars($traveler['travel_date']) ?></p>
             </div>
+            <a style="margin-left:-10px;" href="trip_details.php?preference_id=<?= $traveler['preference_id'] ?>" class="view-more">View More</a>
+        </div>
+    <?php endforeach; ?>
+</div>
+
+
+            
         </div>
     </div>
 

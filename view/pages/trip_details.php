@@ -423,7 +423,7 @@ function convertPathToWeb($absolutePath) {
                 <div class="username" onclick="toggleDropdown()">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></div>
                 <div class="dropdown">
                     <a href="profile.php">Profile</a>
-                    <a href="/Travel_Pal/action/logout.php">Log Out</a>
+                    <a href="/MyTravelPal/action/logout.php">Log Out</a>
                 </div>
             </div>
         <?php else: ?>
@@ -442,8 +442,15 @@ function convertPathToWeb($absolutePath) {
             <h2 style="font-size: 28px; color: white; text-align: center; margin-bottom: 20px; font-weight: bold; background-color: #007BFF; padding: 10px 0; border-radius: 5px;">Trip Details</h2>
 
             <div class="trip-header">
-                <img src="<?= htmlspecialchars(convertPathToWeb($trip['profile_picture'] ?? 'default_profile_picture.jpg')) ?>" alt="Profile Picture">
+                <?php 
+                // Default avatar URL
+                $defaultAvatar = 'https://rawcdn.githack.com/Kabi12Blessing/72892025_ChurningPrediction/c2e416446c7e05056259be4e948de42f070a8e6c/266033.png';
+                // Convert absolute path to web-accessible relative path
+                $profilePicturePath = empty($trip['profile_picture']) ? $defaultAvatar : convertPathToWeb($trip['profile_picture']);
+                ?>
+                <img src="<?= htmlspecialchars($profilePicturePath) ?>" alt="Profile Picture" class="profile-picture">
             </div>
+
             <div class="trip-details">
                 <h3>Meet <?= htmlspecialchars($trip['username']) ?>, your potential travel companion</h3>
     
