@@ -20,12 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Fetch the receiver's user_id based on preference_id
     $receiver_id = null;
-    $sql = "SELECT user_id FROM Travel_Preferences WHERE preference_id = :preference_id";
+    $sql_receiver = "SELECT user_id FROM Travel_Preferences WHERE preference_id = :preference_id";
     try {
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':preference_id', $preference_id);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt_receiver = $conn->prepare($sql_receiver);
+        $stmt_receiver->bindParam(':preference_id', $preference_id, PDO::PARAM_INT);
+        $stmt_receiver->execute();
+        $result = $stmt_receiver->fetch(PDO::FETCH_ASSOC);
         if ($result) {
             $receiver_id = $result['user_id'];
         }
@@ -35,19 +35,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     if ($receiver_id) {
-        $sql = "INSERT INTO Messages (sender_id, receiver_id, message_text, preference_id) VALUES (:sender_id, :receiver_id, :message_text, :preference_id)";
+        // Check if a conversation already exists
+        $conversation_id = null;
+        $sql_conversation = "SELECT conversation_id FROM Messages 
+                             WHERE preference_id = :preference_id 
+                             AND ((sender_id = :sender_id1 AND receiver_id = :receiver_id1) 
+                             OR (sender_id = :receiver_id2 AND receiver_id = :sender_id2)) 
+                             LIMIT 1";
         try {
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(':sender_id', $sender_id);
-            $stmt->bindParam(':receiver_id', $receiver_id);
-            $stmt->bindParam(':message_text', $message_text);
-            $stmt->bindParam(':preference_id', $preference_id);
-            $stmt->execute();
+            $stmt_conversation = $conn->prepare($sql_conversation);
+            $stmt_conversation->bindParam(':preference_id', $preference_id, PDO::PARAM_INT);
+            $stmt_conversation->bindParam(':sender_id1', $sender_id, PDO::PARAM_INT);
+            $stmt_conversation->bindParam(':receiver_id1', $receiver_id, PDO::PARAM_INT);
+            $stmt_conversation->bindParam(':sender_id2', $receiver_id, PDO::PARAM_INT);
+            $stmt_conversation->bindParam(':receiver_id2', $sender_id, PDO::PARAM_INT);
+            $stmt_conversation->execute();
+            $conversation = $stmt_conversation->fetch(PDO::FETCH_ASSOC);
+            if ($conversation) {
+                $conversation_id = $conversation['conversation_id'];
+            } else {
+                // No existing conversation, create a new conversation_id
+                $conversation_id = uniqid('conv_', true); // Generating a unique conversation ID
+            }
+        } catch (PDOException $e) {
+            echo 'Error checking for existing conversation: ' . $e->getMessage();
+            exit();
+        }
+
+        // Insert the new message with the determined conversation_id
+        $sql_insert = "INSERT INTO Messages (conversation_id, sender_id, receiver_id, message_text, preference_id) 
+                       VALUES (:conversation_id, :sender_id, :receiver_id, :message_text, :preference_id)";
+        try {
+            $stmt_insert = $conn->prepare($sql_insert);
+            $stmt_insert->bindParam(':conversation_id', $conversation_id, PDO::PARAM_STR);
+            $stmt_insert->bindParam(':sender_id', $sender_id, PDO::PARAM_INT);
+            $stmt_insert->bindParam(':receiver_id', $receiver_id, PDO::PARAM_INT);
+            $stmt_insert->bindParam(':message_text', $message_text, PDO::PARAM_STR);
+            $stmt_insert->bindParam(':preference_id', $preference_id, PDO::PARAM_INT);
+            $stmt_insert->execute();
+            
             // Redirect with success flag
             header('Location: ../view/pages/trip_details.php?preference_id=' . $preference_id . '&message=success');
             exit();
         } catch (PDOException $e) {
-            echo 'Query failed: ' . $e->getMessage();
+            echo 'Error inserting message: ' . $e->getMessage();
             exit();
         }
     } else {

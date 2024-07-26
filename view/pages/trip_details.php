@@ -432,10 +432,8 @@ function convertPathToWeb($absolutePath) {
     </div>
     <div class="sidebar">
         <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="travel_plans.php"><i class="fas fa-plane"></i> Travel Plans</a>
         <a href="messages.php"><i class="fas fa-envelope"></i> Messages</a>
         <a href="profile.php"><i class="fas fa-user"></i> Profile</a>
-        <a href="settings.php"><i class="fas fa-cog"></i> Settings</a>
     </div>
     <div class="main-content">
         <div class="section">
@@ -484,7 +482,7 @@ function convertPathToWeb($absolutePath) {
         <div class="modal-content">
             <span class="close" onclick="hideModal()">&times;</span>
             <h2>Send a Request Match Message</h2>
-            <form id="requestForm" action="/Travel_Pal/action/send_request.php" method="post">
+            <form id="requestForm" action="/MyTravelPal/action/send_request.php" method="post">
                 <input type="hidden" name="preference_id" value="<?= htmlspecialchars($trip['preference_id']) ?>">
                 <!-- //it should be optional -->
                 <textarea name="message" placeholder="Write anything you will like the <?= htmlspecialchars($trip['username']) ?> to know here..." required></textarea> 

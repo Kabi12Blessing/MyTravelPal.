@@ -1,73 +1,69 @@
 <?php
-require '../settings/connection.php'; // Include your database configuration here
+require '../settings/connection.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['trip_id'])) {
-    $trip_id = $_GET['trip_id'];
-    // Fetch trip details from the database
-    $stmt = $conn->prepare("SELECT * FROM trips WHERE id = :id");
-    $stmt->bindParam(':id', $trip_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $trip = $stmt->fetch();
-}
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['trip_id'])) {
-    $trip_id = $_POST['trip_id'];
-    $destination = $_POST['destination'];
-    $origin = $_POST['origin'];
-    $departure_date = $_POST['departure_date'];
-    $return_date = $_POST['return_date'];
-    $description = $_POST['description'];
-    $budget = $_POST['budget'];
-    $travelers = $_POST['travelers'];
-    $accommodation = $_POST['accommodation'];
-    $has_extra_space = $_POST['has_extra_space'];
-    $needs_space = $_POST['needs_space'];
-    $preferred_gender = $_POST['preferred_gender'];
+// Log the entire POST array to the error log for debugging
+error_log(print_r($_POST, true));
 
-    // Update trip details in the database
-    $stmt = $conn->prepare("UPDATE trips SET destination=:destination, origin=:origin, departure_date=:departure_date, return_date=:return_date, description=:description, budget=:budget, travelers=:travelers, accommodation=:accommodation, has_extra_space=:has_extra_space, needs_space=:needs_space, preferred_gender=:preferred_gender WHERE id=:id");
-    $stmt->bindParam(':destination', $destination);
-    $stmt->bindParam(':origin', $origin);
-    $stmt->bindParam(':departure_date', $departure_date);
-    $stmt->bindParam(':return_date', $return_date);
-    $stmt->bindParam(':description', $description);
-    $stmt->bindParam(':budget', $budget);
-    $stmt->bindParam(':travelers', $travelers);
-    $stmt->bindParam(':accommodation', $accommodation);
-    $stmt->bindParam(':has_extra_space', $has_extra_space);
-    $stmt->bindParam(':needs_space', $needs_space);
-    $stmt->bindParam(':preferred_gender', $preferred_gender);
-    $stmt->bindParam(':id', $trip_id, PDO::PARAM_INT);
-    $stmt->execute();
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['preference_id'])) {
+    $preference_id = $_POST['preference_id'];
+    $destination = isset($_POST['destination_country']) && is_numeric($_POST['destination_country']) ? (int)$_POST['destination_country'] : null;
+    $origin = isset($_POST['origin_country']) && is_numeric($_POST['origin_country']) ? (int)$_POST['origin_country'] : null;
+    $departure_date = $_POST['departure_date'] ?? ''; // Ensure this matches the form name attribute
+    $return_date = $_POST['return_date'] ?? ''; // Ensure this matches the form name attribute
+    $description = $_POST['description'] ?? '';
+    $budget = $_POST['budget'] ?? '';
+    $travelers = $_POST['number_of_travelers'] ?? '';
+    $accommodation = $_POST['accommodation_type'] ?? '';
+    $has_extra_space = isset($_POST['space']) && $_POST['space'] == 'has_extra_space' ? 1 : 0;
+    $needs_space = isset($_POST['space']) && $_POST['space'] == 'needs_extra_space' ? 1 : 0;
+    $preferred_gender = $_POST['gender'] ?? ''; // Ensure this matches the form name attribute
 
-    header("Location: ../view/pages/upcoming_trips.php");
-    exit();
+    // Validate the presence of all required fields
+    if ($destination === null || $origin === null || empty($departure_date) || empty($return_date) || empty($budget) || empty($travelers)) {
+        echo "All required fields must be filled out and valid.";
+        exit();
+    }
+
+    try {
+        $stmt = $conn->prepare("UPDATE Travel_Preferences SET 
+            destination_country_id = :destination, 
+            origin_country_id = :origin, 
+            travel_date = :departure_date, 
+            return_date = :return_date, 
+            description = :description, 
+            budget = :budget, 
+            number_of_travelers = :travelers, 
+            accommodation_type = :accommodation, 
+            has_extra_space = :has_extra_space, 
+            needs_space = :needs_space, 
+            preferences = :preferred_gender 
+            WHERE preference_id = :id");
+
+        $stmt->bindParam(':destination', $destination, PDO::PARAM_INT);
+        $stmt->bindParam(':origin', $origin, PDO::PARAM_INT);
+        $stmt->bindParam(':departure_date', $departure_date);
+        $stmt->bindParam(':return_date', $return_date);
+        $stmt->bindParam(':description', $description);
+        $stmt->bindParam(':budget', $budget);
+        $stmt->bindParam(':travelers', $travelers);
+        $stmt->bindParam(':accommodation', $accommodation);
+        $stmt->bindParam(':has_extra_space', $has_extra_space, PDO::PARAM_BOOL);
+        $stmt->bindParam(':needs_space', $needs_space, PDO::PARAM_BOOL);
+        $stmt->bindParam(':preferred_gender', $preferred_gender);
+        $stmt->bindParam(':id', $preference_id, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            echo "success";
+        } else {
+            echo "Failed to update trip. Please check your data and try again.";
+        }
+    } catch (PDOException $e) {
+        echo "Failed to update trip: " . $e->getMessage();
+    }
+} else {
+    echo "Invalid request. Please provide the necessary information.";
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Trip</title>
-</head>
-<body>
-    <h2>Edit Trip</h2>
-    <form action="edit_trip.php" method="post">
-        <input type="hidden" name="trip_id" value="<?= htmlspecialchars($trip['id']) ?>">
-        <label>Destination: <input type="text" name="destination" value="<?= htmlspecialchars($trip['destination']) ?>" required></label><br>
-        <label>Origin: <input type="text" name="origin" value="<?= htmlspecialchars($trip['origin']) ?>" required></label><br>
-        <label>Departure Date: <input type="date" name="departure_date" value="<?= htmlspecialchars($trip['departure_date']) ?>" required></label><br>
-        <label>Return Date: <input type="date" name="return_date" value="<?= htmlspecialchars($trip['return_date']) ?>" required></label><br>
-        <label>Description: <textarea name="description" required><?= htmlspecialchars($trip['description']) ?></textarea></label><br>
-        <label>Budget: <input type="number" name="budget" value="<?= htmlspecialchars($trip['budget']) ?>" required></label><br>
-        <label>Travelers: <input type="number" name="travelers" value="<?= htmlspecialchars($trip['travelers']) ?>" required></label><br>
-        <label>Accommodation: <input type="text" name="accommodation" value="<?= htmlspecialchars($trip['accommodation']) ?>" required></label><br>
-        <label>Has Extra Space: <input type="text" name="has_extra_space" value="<?= htmlspecialchars($trip['has_extra_space']) ?>" required></label><br>
-        <label>Needs Space: <input type="text" name="needs_space" value="<?= htmlspecialchars($trip['needs_space']) ?>" required></label><br>
-        <label>Preferred Gender: <input type="text" name="preferred_gender" value="<?= htmlspecialchars($trip['preferred_gender']) ?>" required></label><br>
-        <button type="submit">Save</button>
-    </form>
-</body>
-</html>

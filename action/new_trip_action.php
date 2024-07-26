@@ -7,98 +7,83 @@ error_reporting(E_ALL);
 
 require '../settings/connection.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id = $_SESSION['user_id'];
-    $origin_country_id = $_POST['origin_country'];
-    $destination_country_id = $_POST['destination_country'];
-    $travel_date = $_POST['departure'];
-    $return_date = $_POST['return'];
-    $budget = $_POST['budget'];
-    $has_extra_space = $_POST['space'] === 'has_extra_space' ? 1 : 0;
-    $needs_space = $_POST['space'] === 'needs_extra_space' ? 1 : 0;
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../login.php');
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $originCountry = $_POST['origin_country'];
+    $destinationCountry = $_POST['destination_country'];
+    $departureDate = $_POST['departure'];
+    $returnDate = $_POST['return'];
     $description = $_POST['description'];
-    $number_of_travelers = $_POST['travelers'];
-    $accommodation_type = $_POST['accommodation'];
-    $preferred_gender = $_POST['gender'];
+    $budget = $_POST['budget'];
+    $travelers = $_POST['travelers'];
+    $accommodation = $_POST['accommodation'];
+    $hasExtraSpace = isset($_POST['space']) && $_POST['space'] == 'has_extra_space' ? 1 : 0;
+    $needsSpace = isset($_POST['space']) && $_POST['space'] == 'needs_extra_space' ? 1 : 0;
+    $preferredGender = $_POST['gender'];
 
-    // Handle file upload
-    $target_dir = __DIR__ . "/../uploads/";
-    if (!file_exists($target_dir)) {
-        mkdir($target_dir, 0777, true);
+    // Validate inputs
+    $errors = [];
+    $today = date('Y-m-d');
+
+    if (empty($originCountry) || empty($destinationCountry) || empty($departureDate) || empty($returnDate) || empty($travelers)) {
+        $errors[] = 'All fields are required.';
+    }
+    if ($originCountry === $destinationCountry) {
+        $errors[] = 'Origin and destination cannot be the same.';
+    }
+    if ($departureDate < $today) {
+        $errors[] = 'The departure date cannot be in the past.';
+    }
+    if ($returnDate < $departureDate) {
+        $errors[] = 'The return date cannot be before the departure date.';
+    }
+    if ($budget <= 0) {
+        $errors[] = 'Budget must be a positive number.';
+    }
+    if ($travelers < 1) {
+        $errors[] = 'There must be at least one traveler.';
     }
 
-    $image_paths = [];
-    $uploadOk = 1;
-    $allowed_extensions = ["jpg", "jpeg", "png", "gif"];
-
-    foreach ($_FILES['images']['tmp_name'] as $key => $tmp_name) {
-        $file_name = basename($_FILES["images"]["name"][$key]);
-        $target_file = $target_dir . $file_name;
-        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-        // Check if image file is an actual image or fake image
-        $check = getimagesize($tmp_name);
-        if ($check !== false) {
-            $uploadOk = 1;
-        } else {
-            echo "File is not an image.";
-            $uploadOk = 0;
-        }
-
-        // Check file size
-        if ($_FILES["images"]["size"][$key] > 500000) {
-            echo "Sorry, your file is too large.";
-            $uploadOk = 0;
-        }
-
-        // Allow certain file formats
-        if (!in_array($imageFileType, $allowed_extensions)) {
-            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-            $uploadOk = 0;
-        }
-
-        // Check if $uploadOk is set to 0 by an error
-        if ($uploadOk == 0) {
-            echo "Sorry, your file was not uploaded.";
-        } else {
-            if (move_uploaded_file($tmp_name, $target_file)) {
-                $image_paths[] = $target_file;
-            } else {
-                echo "Sorry, there was an error uploading your file.";
-            }
-        }
-    }
-
-    // Convert image paths array to JSON for storage
-    $image_paths_json = json_encode($image_paths);
-
-    // Prepare SQL statement
-    $sql = "INSERT INTO Travel_Preferences 
-            (user_id, origin_country_id, destination_country_id, travel_date, return_date, budget, has_extra_space, needs_space, description, number_of_travelers, accommodation_type, preferences, image_path)
-            VALUES 
-            (:user_id, :origin_country_id, :destination_country_id, :travel_date, :return_date, :budget, :has_extra_space, :needs_space, :description, :number_of_travelers, :accommodation_type, :preferred_gender, :image_path)";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':user_id', $user_id);
-    $stmt->bindParam(':origin_country_id', $origin_country_id);
-    $stmt->bindParam(':destination_country_id', $destination_country_id);
-    $stmt->bindParam(':travel_date', $travel_date);
-    $stmt->bindParam(':return_date', $return_date);
-    $stmt->bindParam(':budget', $budget);
-    $stmt->bindParam(':has_extra_space', $has_extra_space);
-    $stmt->bindParam(':needs_space', $needs_space);
-    $stmt->bindParam(':description', $description);
-    $stmt->bindParam(':number_of_travelers', $number_of_travelers);
-    $stmt->bindParam(':accommodation_type', $accommodation_type);
-    $stmt->bindParam(':preferred_gender', $preferred_gender);
-    $stmt->bindParam(':image_path', $image_paths_json);
-
-    // Execute the statement
-    if ($stmt->execute()) {
-        header("Location: ../view/pages/dashboard.php");
+    if (!empty($errors)) {
+        // Redirect back with errors
+        header('Location: ../view/pages/Dashboard.php?error=' . urlencode(implode(', ', $errors)));
         exit();
-    } else {
-        echo "Error: " . $stmt->errorInfo()[2];
     }
+
+    // Insert trip data into the database
+    $sql = "INSERT INTO Travel_Preferences (user_id, origin_country_id, destination_country_id, travel_date, return_date, description, budget, number_of_travelers, accommodation_type, has_extra_space, needs_space, preferences) 
+            VALUES (:user_id, :origin, :destination, :departure_date, :return_date, :description, :budget, :travelers, :accommodation, :has_extra_space, :needs_space, :preferred_gender)";
+
+    try {
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':user_id', $_SESSION['user_id']);
+        $stmt->bindParam(':origin', $originCountry);
+        $stmt->bindParam(':destination', $destinationCountry);
+        $stmt->bindParam(':departure_date', $departureDate);
+        $stmt->bindParam(':return_date', $returnDate);
+        $stmt->bindParam(':description', $description);
+        $stmt->bindParam(':budget', $budget);
+        $stmt->bindParam(':travelers', $travelers);
+        $stmt->bindParam(':accommodation', $accommodation);
+        $stmt->bindParam(':has_extra_space', $hasExtraSpace);
+        $stmt->bindParam(':needs_space', $needsSpace);
+        $stmt->bindParam(':preferred_gender', $preferredGender);
+        $stmt->execute();
+        
+        header('Location: ../view/pages/Dashboard.php?success=trip_created');
+        exit();
+    } catch (PDOException $e) {
+        error_log('Query failed: ' . $e->getMessage()); // Log the error message
+        echo 'Error: ' . $e->getMessage(); // Optionally display the error
+        exit();
+    }
+} else {
+    header('Location: ../view/pages/Dashboard.php');
+    exit();
 }
 ?>

@@ -13,7 +13,7 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Fetch messages from the database
+// Fetch last message from each conversation
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT m.*, u.username AS sender_username, u.profile_picture AS sender_profile_pic, tp.origin_country_id, tp.destination_country_id, c1.country_name AS origin_country, c2.country_name AS destination_country
         FROM Messages m
@@ -21,11 +21,17 @@ $sql = "SELECT m.*, u.username AS sender_username, u.profile_picture AS sender_p
         JOIN Travel_Preferences tp ON m.preference_id = tp.preference_id
         JOIN Countries c1 ON tp.origin_country_id = c1.country_id
         JOIN Countries c2 ON tp.destination_country_id = c2.country_id
-        WHERE m.receiver_id = :user_id
+        INNER JOIN (
+            SELECT MAX(message_id) AS last_message_id
+            FROM Messages
+            WHERE receiver_id = :user_id
+            GROUP BY conversation_id
+        ) lm ON m.message_id = lm.last_message_id
         ORDER BY m.sent_at DESC";
+
 try {
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':user_id', $user_id);
+    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
     $stmt->execute();
     $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -279,6 +285,16 @@ function convertPathToWeb($absolutePath) {
             background-color: #28a745;
             color: white;
         }
+
+        .message .accept-button {
+        background-color: #007BFF; /* A shade of blue */
+        color: white;
+        }
+        .message .accept-button:hover {
+            background-color: #0056b3; /* Darker shade of blue for hover effect */
+        }
+
+
         .message .decline-button {
             background-color: #dc3545;
             color: white;
@@ -306,6 +322,8 @@ function convertPathToWeb($absolutePath) {
         .footer a:hover {
             text-decoration: underline;
         }
+
+        
     </style>
 </head>
 <body>
@@ -336,30 +354,39 @@ function convertPathToWeb($absolutePath) {
         <a href="settings.php"><i class="fas fa-cog"></i> Settings</a>
     </div>
     <div class="main-content">
-        <div class="section">
-            <h2 style="font-size: 28px; color: white; text-align: center; margin-bottom: 20px; font-weight: bold; background-color: #007BFF; padding: 10px 0; border-radius: 5px;" >Messages</h2>
-            <div class="message-container">
-                <?php foreach ($messages as $message): ?>
-                    <div class="message">
-                        <img src="<?= htmlspecialchars(convertPathToWeb($message['sender_profile_pic'] ?? 'default_profile_picture.jpg')) ?>" alt="Profile Picture" class="profile-pic">
-                        <div class="message-content">
-                            <span class="sender"><?= htmlspecialchars($message['sender_username']) ?></span>
-                            <p class="trip-details">Your trip from <?= htmlspecialchars($message['origin_country']) ?> to <?= htmlspecialchars($message['destination_country']) ?></p>
-                            <p class="message-text"><?= htmlspecialchars($message['sender_username']) ?> would like to have you as a travel companion for this trip.<br>
-                                <span style="font-weight: bold;">What <?= htmlspecialchars($message['sender_username']) ?> would like you to know:</span><br>
-                                <?= htmlspecialchars($message['message_text']) ?: 'No additional message provided.' ?>
-                            </p>
-                            <span class="timestamp"><?= htmlspecialchars($message['sent_at']) ?></span>
-                            <div class="button-container">
-                                <a href="message_thread.php?preference_id=<?= htmlspecialchars($message['preference_id']) ?>&sender_id=<?= htmlspecialchars($message['sender_id']) ?>&receiver_id=<?= htmlspecialchars($user_id) ?>" class="approve-button">View Full Conversation</a>
-                                <button class="decline-button">Decline</button>
-                            </div>
+    <div class="section">
+        <h2 style="font-size: 28px; color: white; text-align: center; margin-bottom: 20px; font-weight: bold; background-color: #007BFF; padding: 10px 0; border-radius: 5px;">Messages</h2>
+        <div class="message-container">
+            <?php foreach ($messages as $message): ?>
+                <div class="message">
+                    <img src="<?= htmlspecialchars(convertPathToWeb($message['sender_profile_pic'] ?? 'default_profile_picture.jpg')) ?>" alt="Profile Picture" class="profile-pic">
+                    <div class="message-content">
+                        <span class="sender"><?= htmlspecialchars($message['sender_username']) ?></span>
+                        <p class="trip-details">Your trip from <?= htmlspecialchars($message['origin_country']) ?> to <?= htmlspecialchars($message['destination_country']) ?></p>
+                        <p class="message-text"><?= htmlspecialchars($message['sender_username']) ?> would like to have you as a travel companion for this trip.<br>
+                            <span style="font-weight: bold;">What <?= htmlspecialchars($message['sender_username']) ?> would like you to know:</span><br>
+                            <?= htmlspecialchars($message['message_text']) ?: 'No additional message provided.' ?>
+                        </p>
+                        <span class="timestamp"><?= htmlspecialchars($message['sent_at']) ?></span>
+                        <div class="button-container">
+                            <a href="message_thread.php?conversation_id=<?= htmlspecialchars($message['conversation_id']) ?>&preference_id=<?= htmlspecialchars($message['preference_id']) ?>&sender_id=<?= htmlspecialchars($message['sender_id']) ?>&receiver_id=<?= htmlspecialchars($user_id) ?>" class="approve-button">View Full Conversation</a>
+                            <button class="accept-button">Accept Matching Request</button>
+                            
+                            <!-- Decline Button with Form -->
+                            <form method="POST" action="../../../MyTravelPal/action/delete_conversation.php" style="display:inline;">
+                                <input type="hidden" name="conversation_id" value="<?= htmlspecialchars($message['conversation_id']) ?>">
+                                <input type="hidden" name="preference_id" value="<?= htmlspecialchars($message['preference_id']) ?>">
+                                <button type="submit" class="decline-button" onclick="return confirm('Are you sure you want to decline and delete this conversation?')">Decline</button>
+                            </form>
+
                         </div>
                     </div>
-                <?php endforeach; ?>
-            </div>
+                </div>
+            <?php endforeach; ?>
         </div>
     </div>
+</div>
+
     <div class="footer">
         <p>&copy; 2024 TravelPal. All rights reserved. | <a href="/view/privacy-policy.php">Privacy Policy</a> | <a href="/view/terms-of-service.php">Terms of Service</a></p>
     </div>

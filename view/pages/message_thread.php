@@ -13,21 +13,27 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Get the preference_id, sender_id, and receiver_id from the URL
+// Get the conversation_id, preference_id, and receiver_id from the URL
+$conversation_id = isset($_GET['conversation_id']) ? $_GET['conversation_id'] : null;
 $preference_id = isset($_GET['preference_id']) ? intval($_GET['preference_id']) : 0;
 $receiver_id = isset($_GET['receiver_id']) ? intval($_GET['receiver_id']) : 0;
 $sender_id = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : 0;
 
-// SQL query to fetch messages between the two users for the specified preference ID
+if (!$conversation_id) {
+    echo 'Invalid conversation.';
+    exit();
+}
+
+// SQL query to fetch messages for the specified conversation ID
 $sql = "SELECT m.*, u.username AS sender_username, u.profile_picture AS sender_profile_pic
         FROM Messages m
         JOIN Users u ON m.sender_id = u.user_id
-        WHERE m.preference_id = :preference_id
+        WHERE m.conversation_id = :conversation_id
         ORDER BY m.sent_at ASC";
 
 try {
     $stmt = $conn->prepare($sql);
-    $stmt->bindValue(':preference_id', $preference_id, PDO::PARAM_INT);
+    $stmt->bindValue(':conversation_id', $conversation_id, PDO::PARAM_STR);
     $stmt->execute();
     $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -51,36 +57,39 @@ function convertPathToWeb($absolutePath) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $message_text = $_POST['message_text'];
     if (!empty($message_text)) {
-        // Determine the correct sender and receiver IDs
-        $new_sender_id = $sender_id;
-        $new_receiver_id = $receiver_id;
+        // Fetch the last message's sender_id and receiver_id for the given conversation_id
+        $sql_last_message = "SELECT sender_id, receiver_id FROM Messages WHERE conversation_id = :conversation_id ORDER BY sent_at DESC LIMIT 1";
+        $stmt_last_message = $conn->prepare($sql_last_message);
+        $stmt_last_message->bindValue(':conversation_id', $conversation_id, PDO::PARAM_STR);
+        $stmt_last_message->execute();
+        $last_message = $stmt_last_message->fetch(PDO::FETCH_ASSOC);
+        $last_message_sender_id = $last_message['sender_id'] ?? null;
+        $last_message_receiver_id = $last_message['receiver_id'] ?? null;
 
-        if (!empty($messages)) {
-            $last_message = end($messages);
-            if ($last_message['sender_id'] == $sender_id) {
-                // Swap sender and receiver if the last message was sent by the current user
-                $new_sender_id = $receiver_id;
-                $new_receiver_id = $sender_id;
-            } else {
-                // Keep the original sender and receiver if the last message was sent by the other user
-                $new_sender_id = $sender_id;
-                $new_receiver_id = $receiver_id;
-            }
+        // Determine the correct sender and receiver IDs based on the last message
+        if ($last_message_receiver_id === $sender_id) {
+            // Current user was the receiver in the last message, so now they are the sender
+            $new_sender_id = $sender_id;
+            $new_receiver_id = $last_message_sender_id;
+        } else {
+            // Otherwise, maintain the current user as the sender and the other as the receiver
+            $new_sender_id = $sender_id;
+            $new_receiver_id = $last_message_receiver_id;
         }
 
-        // Debugging: Output the sender and receiver IDs before inserting
-        echo '<pre>New Sender ID: ' . $new_sender_id . ', New Receiver ID: ' . $new_receiver_id . '</pre>';
-
-        $sql = "INSERT INTO Messages (sender_id, receiver_id, message_text, preference_id) VALUES (:sender_id, :receiver_id, :message_text, :preference_id)";
+        // Insert the new message with the determined roles
+        $sql = "INSERT INTO Messages (conversation_id, sender_id, receiver_id, message_text, preference_id) VALUES (:conversation_id, :sender_id, :receiver_id, :message_text, :preference_id)";
         try {
             $stmt = $conn->prepare($sql);
+            $stmt->bindValue(':conversation_id', $conversation_id, PDO::PARAM_STR);
             $stmt->bindValue(':sender_id', $new_sender_id, PDO::PARAM_INT);
             $stmt->bindValue(':receiver_id', $new_receiver_id, PDO::PARAM_INT);
             $stmt->bindValue(':message_text', $message_text, PDO::PARAM_STR);
             $stmt->bindValue(':preference_id', $preference_id, PDO::PARAM_INT);
             $stmt->execute();
-            // Refresh the page to display the new message
-            header("Location: message_thread.php?preference_id=$preference_id&receiver_id=$new_receiver_id");
+
+            // Redirect to the same page with updated receiver_id
+            header("Location: message_thread.php?conversation_id=$conversation_id&preference_id=$preference_id&receiver_id=$new_receiver_id");
             exit();
         } catch (PDOException $e) {
             echo 'Message sending failed: ' . $e->getMessage();
@@ -88,6 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -400,9 +411,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </form>
         </div>
     </div>
-    <div class="footer">
+    <!-- <div class="footer">
         <p>&copy; 2024 TravelPal. All rights reserved. | <a href="/view/privacy-policy.php">Privacy Policy</a> | <a href="/view/terms-of-service.php">Terms of Service</a></p>
-    </div>
+    </div> -->
     <script>
         function toggleDropdown() {
             var dropdown = document.querySelector('.dropdown');

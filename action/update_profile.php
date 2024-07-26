@@ -4,6 +4,7 @@ session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
 require '../settings/connection.php';
 
 // Check if user is logged in
@@ -19,6 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate inputs
     if (empty($username) || empty($email)) {
         header('Location: ../view/pages/Dashboard.php?error=empty_fields');
+        exit();
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        header('Location: ../view/pages/Dashboard.php?error=invalid_email');
         exit();
     }
 
@@ -37,7 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: ../view/pages/Dashboard.php?success=profile_updated');
         exit();
     } catch (PDOException $e) {
-        echo 'Query failed: ' . $e->getMessage();
+        // Log the error instead of displaying it
+        error_log('Database query failed: ' . $e->getMessage());
+        header('Location: ../view/pages/Dashboard.php?error=update_failed');
         exit();
     }
 } else {

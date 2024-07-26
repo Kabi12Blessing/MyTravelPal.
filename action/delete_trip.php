@@ -1,14 +1,23 @@
 <?php
-require '../settings/connection.php'; // Include your database configuration here
+require '../settings/connection.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['trip_id'])) {
-    $trip_id = $_GET['trip_id'];
-    // Delete trip from the database
-    $stmt = $conn->prepare("DELETE FROM trips WHERE id = :id");
-    $stmt->bindParam(':id', $trip_id, PDO::PARAM_INT);
-    $stmt->execute();
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['preference_id'])) {
+    $preference_id = $_GET['preference_id'];
 
-    header("Location: ../view/pages/upcoming_trips.php");
-    exit();
+    // Prepare the SQL statement to delete the trip
+    $stmt = $conn->prepare("DELETE FROM Travel_Preferences WHERE preference_id = :preference_id");
+    $stmt->bindParam(':preference_id', $preference_id, PDO::PARAM_INT);
+
+    try {
+        if ($stmt->execute()) {
+            echo 'success';
+        } else {
+            echo 'error';
+        }
+    } catch (PDOException $e) {
+        echo 'error';
+    }
+} else {
+    echo 'error';
 }
 ?>

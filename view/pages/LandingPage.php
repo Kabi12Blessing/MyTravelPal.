@@ -493,7 +493,7 @@
             <h2>TravelPal Login</h2>
         </div>
         <div class="modal-body">
-            <form action="/Travel_Pal/action/login_user_action.php" method="POST">
+            <form action="/MyTravelPal/action/login_user_action.php" method="POST">
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Password" required>
                 <button type="submit">LOGIN</button>
@@ -524,7 +524,7 @@
                 <h2>TravelPal Register</h2>
             </div>
             <div class="modal-body">
-                <form action="/Travel_Pal/action/register_user_action.php" method="POST">
+                <form action="/MyTravelPal/action/register_user_action.php" method="POST">
                     <input type="text" name="username" placeholder="Username" required>
                     <input type="email" name="email" placeholder="Email" required>
                     <input type="password" name="password" placeholder="Password" required>
